@@ -1,0 +1,6 @@
+name: example
+command: ["/bin/sh", "-c", "echo hello"]
+env:
+  - name: FOO
+    value: BAR
+workingDir: "/"
