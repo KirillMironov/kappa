@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"github.com/KirillMironov/kappa/internal/kappa/domain"
 	"github.com/KirillMironov/kappa/pkg/logger"
 	"github.com/KirillMironov/kappa/pkg/tcp"
@@ -23,7 +24,7 @@ func NewHandler(port string, logger logger.Logger) *Handler {
 	}
 }
 
-func (h *Handler) Start() error {
+func (h Handler) Start(ctx context.Context) error {
 	client, err := tcp.NewClient[[]domain.Pod]("", h.port)
 	if err != nil {
 		return err
@@ -37,6 +38,8 @@ func (h *Handler) Start() error {
 
 	for {
 		select {
+		case <-ctx.Done():
+			return ctx.Err()
 		case pods := <-podsCh:
 			h.logger.Infof("received pods: %v", pods)
 		case err = <-errorCh:
