@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/KirillMironov/kappa/internal/kappa/core"
+	"github.com/KirillMironov/kappa/internal/kappa/domain"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -19,10 +19,10 @@ workingDir: "/"
 
 	pod, err := parser.Parse([]byte(yaml))
 	assert.NoError(t, err)
-	assert.Equal(t, core.Pod{
+	assert.Equal(t, domain.Pod{
 		Name:    "test",
 		Command: []string{"/bin/sh", "-c"},
-		Environment: []core.Environment{
+		Environment: []domain.Environment{
 			{Name: "FOO", Value: "BAR"},
 		},
 		WorkingDir: "/",

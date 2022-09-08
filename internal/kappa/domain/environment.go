@@ -1,4 +1,4 @@
-package core
+package domain
 
 type Environment struct {
 	Name  string `yaml:"name"`

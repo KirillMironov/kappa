@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"github.com/KirillMironov/kappa/internal/kappa/core"
-	"github.com/KirillMironov/kappa/pkg/log"
+	"github.com/KirillMironov/kappa/internal/kappa/domain"
+	"github.com/KirillMironov/kappa/pkg/logger"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,30 +11,30 @@ import (
 )
 
 type Loader struct {
-	pods         chan<- []core.Pod
-	PodsDir      string
-	LoadInterval time.Duration
+	pods         chan<- []domain.Pod
+	podsDir      string
+	loadInterval time.Duration
 	parser       parser
-	logger       log.Logger
+	logger       logger.Logger
 }
 
 type parser interface {
-	Parse(data []byte) (core.Pod, error)
+	Parse(data []byte) (domain.Pod, error)
 }
 
-func NewLoader(pods chan<- []core.Pod, podsDir string, loadInterval time.Duration, parser parser,
-	logger log.Logger) *Loader {
+func NewLoader(pods chan<- []domain.Pod, podsDir string, loadInterval time.Duration, parser parser,
+	logger logger.Logger) *Loader {
 	return &Loader{
 		pods:         pods,
-		PodsDir:      podsDir,
-		LoadInterval: loadInterval,
+		podsDir:      podsDir,
+		loadInterval: loadInterval,
 		parser:       parser,
 		logger:       logger,
 	}
 }
 
 func (l Loader) Start(ctx context.Context) {
-	timer := time.NewTicker(l.LoadInterval)
+	timer := time.NewTicker(l.loadInterval)
 
 	for {
 		select {
@@ -52,15 +52,15 @@ func (l Loader) Start(ctx context.Context) {
 	}
 }
 
-func (l Loader) load() (pods []core.Pod, err error) {
-	files, err := os.ReadDir(l.PodsDir)
+func (l Loader) load() (pods []domain.Pod, err error) {
+	files, err := os.ReadDir(l.podsDir)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, file := range files {
 		if strings.HasSuffix(file.Name(), ".yaml") && !file.IsDir() {
-			path := filepath.Join(l.PodsDir, file.Name())
+			path := filepath.Join(l.podsDir, file.Name())
 
 			data, err := os.ReadFile(path)
 			if err != nil {
