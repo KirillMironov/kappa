@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/KirillMironov/kappa/internal/kappa/config"
 	"github.com/KirillMironov/kappa/internal/kappa/domain"
 	"github.com/KirillMironov/kappa/internal/kappa/service"
 	"github.com/KirillMironov/kappa/internal/kappa/transport"
@@ -17,12 +18,17 @@ func main() {
 		TimestampFormat: "01|02 15:04:05.000",
 	})
 
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	var (
 		pods = make(chan []domain.Pod)
 
 		parser  = service.Parser{}
-		loader  = service.NewLoader(pods, ".", time.Second, parser, logger)
-		handler = transport.NewHandler(pods, "20501", logger)
+		loader  = service.NewLoader(pods, cfg.PodsDir, time.Second, parser, logger)
+		handler = transport.NewHandler(pods, cfg.Port, logger)
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -30,7 +36,7 @@ func main() {
 
 	go loader.Start(ctx)
 
-	err := handler.Start(ctx)
+	err = handler.Start(ctx)
 	if err != nil {
 		logger.Fatal(err)
 	}
