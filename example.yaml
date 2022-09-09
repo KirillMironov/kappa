@@ -1,5 +1,8 @@
 name: example
-command: ["/bin/sh", "-c", "echo hello"]
+command: /bin/sh
+args:
+    - -c
+    - echo hello
 env:
   - name: FOO
     value: BAR

@@ -9,14 +9,16 @@ import (
 )
 
 type Handler struct {
+	pods              chan<- []domain.Pod
 	port              string
 	reconnectInterval time.Duration
 	reconnectAttempts int
 	logger            logger.Logger
 }
 
-func NewHandler(port string, logger logger.Logger) *Handler {
+func NewHandler(pods chan<- []domain.Pod, port string, logger logger.Logger) *Handler {
 	return &Handler{
+		pods:              pods,
 		port:              port,
 		reconnectInterval: time.Second * 3,
 		reconnectAttempts: 3,
@@ -41,7 +43,7 @@ func (h Handler) Start(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case pods := <-podsCh:
-			h.logger.Infof("received pods: %v", pods)
+			h.pods <- pods
 		case err = <-errorCh:
 			h.logger.Error(err)
 			return err
