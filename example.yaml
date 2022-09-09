@@ -1,8 +1,7 @@
 name: example
-command: /bin/sh
+command: go
 args:
-    - -c
-    - echo hello
+  - version
 env:
   - name: FOO
     value: BAR

@@ -9,8 +9,10 @@ import (
 func TestParser_Parse(t *testing.T) {
 	var parser Parser
 	var yaml = `
-name: test
-command: ["/bin/sh", "-c"]
+name: example
+command: go
+args:
+  - version
 env:
   - name: FOO
     value: BAR
@@ -20,8 +22,9 @@ workingDir: "/"
 	pod, err := parser.Parse([]byte(yaml))
 	assert.NoError(t, err)
 	assert.Equal(t, domain.Pod{
-		Name:    "test",
-		Command: []string{"/bin/sh", "-c"},
+		Name:    "example",
+		Command: "go",
+		Args:    []string{"version"},
 		Environment: []domain.Environment{
 			{Name: "FOO", Value: "BAR"},
 		},
