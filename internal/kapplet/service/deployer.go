@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"reflect"
 	"sync"
+	"syscall"
 )
 
 type Deployer struct {
@@ -69,15 +70,14 @@ func (d *Deployer) deploy(ctx context.Context, pod domain.Pod) {
 
 		cmd := exec.CommandContext(ctx, pod.Command, pod.Args...)
 
-		err := cmd.Start()
-		if err != nil {
-			d.logger.Errorf("failed to start pod %s: %v", pod.Name, err)
-			return
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid:   true,
+			Pdeathsig: syscall.SIGTERM,
 		}
 
-		err = cmd.Wait()
+		err := cmd.Run()
 		if err != nil {
-			d.logger.Errorf("failed to execute command: %v", err)
+			d.logger.Errorf("failed to deploy pod %s: %v", pod.Name, err)
 		}
 	}()
 }
