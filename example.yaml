@@ -1,8 +1,11 @@
-name: example
-command: go
-args:
-  - version
-env:
-  - name: FOO
-    value: BAR
-workingDir: "/"
+services:
+
+  - name: echo
+    command: echo $FOO
+    env:
+      - name: FOO
+        value: BAR
+    working_dir: /
+
+  - name: version
+    command: go version

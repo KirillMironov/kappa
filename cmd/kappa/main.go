@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/KirillMironov/kappa/internal/kappa/config"
-	"github.com/KirillMironov/kappa/internal/kappa/domain"
 	"github.com/KirillMironov/kappa/internal/kappa/service"
 	"github.com/KirillMironov/kappa/internal/kappa/transport"
 	"github.com/sirupsen/logrus"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -24,20 +28,31 @@ func main() {
 	}
 
 	var (
-		pods = make(chan []domain.Pod)
-
-		parser  = service.Parser{}
-		loader  = service.NewLoader(pods, cfg.PodsDir, time.Second, parser, logger)
-		handler = transport.NewHandler(pods, cfg.Port, logger)
+		deployer = service.NewDeployer(logger)
+		handler  = transport.NewHandler(deployer)
 	)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	srv := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: handler.InitRoutes(),
+	}
 
-	go loader.Start(ctx)
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+		<-quit
 
-	err = handler.Start(ctx)
-	if err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			logger.Fatal(err)
+		}
+	}()
+
+	err = srv.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatal(err)
 	}
 }
