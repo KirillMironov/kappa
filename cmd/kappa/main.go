@@ -1,20 +1,17 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"github.com/KirillMironov/kappa/internal/kappa/config"
 	"github.com/KirillMironov/kappa/internal/kappa/service"
 	"github.com/KirillMironov/kappa/internal/kappa/transport"
+	"github.com/KirillMironov/kappa/pkg/httputil"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
+	// Logger
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     true,
@@ -22,36 +19,34 @@ func main() {
 		TimestampFormat: "01|02 15:04:05.000",
 	})
 
+	// Config
 	cfg, err := config.Load()
 	if err != nil {
 		logger.Fatal(err)
 	}
 
+	// DI
 	var (
 		deployer = service.NewDeployer(logger)
 		handler  = transport.NewHandler(deployer)
 	)
 
-	srv := &http.Server{
+	// HTTP server
+	httpServer := &http.Server{
 		Addr:    ":" + cfg.Port,
-		Handler: handler.InitRoutes(),
+		Handler: handler.Router(),
 	}
 
+	// Graceful shutdown
 	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-		<-quit
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-
-		err := srv.Shutdown(ctx)
+		err := httputil.GracefulShutdown(httpServer, cfg.ShutdownTimeout)
 		if err != nil {
 			logger.Fatal(err)
 		}
 	}()
 
-	err = srv.ListenAndServe()
+	// Start HTTP server
+	err = httpServer.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatal(err)
 	}

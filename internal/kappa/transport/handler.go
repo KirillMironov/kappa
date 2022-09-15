@@ -4,7 +4,6 @@ import (
 	"github.com/KirillMironov/kappa/internal/kappa/domain"
 	"github.com/KirillMironov/kappa/pkg/httputil"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 )
 
@@ -21,9 +20,8 @@ func NewHandler(deployer deployer) *Handler {
 	return &Handler{deployer: deployer}
 }
 
-func (h Handler) InitRoutes() http.Handler {
+func (h Handler) Router() *chi.Mux {
 	router := chi.NewRouter()
-	router.Use(middleware.Recoverer)
 
 	router.Route("/api/v1/deploy", func(r chi.Router) {
 		router.Post("/", h.deploy)
