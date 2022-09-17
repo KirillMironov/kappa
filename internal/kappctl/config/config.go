@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	Addr string `default:"localhost" envconfig:"ADDR"`
+	Host string `default:"localhost" envconfig:"HOST"`
 	Port string `default:"20501" envconfig:"PORT"`
 }
 
