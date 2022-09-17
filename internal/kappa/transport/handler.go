@@ -23,7 +23,7 @@ func NewHandler(deployer deployer) *Handler {
 func (h Handler) Router() *chi.Mux {
 	router := chi.NewRouter()
 
-	router.Route("/api/v1/deploy", func(r chi.Router) {
+	router.Route("/api/v1/deploy", func(router chi.Router) {
 		router.Post("/", h.deploy)
 		router.Delete("/", h.cancel)
 	})
@@ -32,7 +32,7 @@ func (h Handler) Router() *chi.Mux {
 }
 
 func (h Handler) deploy(w http.ResponseWriter, r *http.Request) {
-	deployment, err := httputil.StructFromBodyJSON[domain.Deployment](r.Body)
+	deployment, err := httputil.StructFromBodyYAML[domain.Deployment](r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -45,7 +45,7 @@ func (h Handler) deploy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) cancel(w http.ResponseWriter, r *http.Request) {
-	deployment, err := httputil.StructFromBodyJSON[domain.Deployment](r.Body)
+	deployment, err := httputil.StructFromBodyYAML[domain.Deployment](r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
