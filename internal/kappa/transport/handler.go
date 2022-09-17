@@ -1,39 +1,58 @@
 package transport
 
 import (
-	"context"
 	"github.com/KirillMironov/kappa/internal/kappa/domain"
-	"github.com/KirillMironov/kappa/pkg/logger"
-	"github.com/KirillMironov/kappa/pkg/tcp"
+	"github.com/KirillMironov/kappa/pkg/httputil"
+	"github.com/go-chi/chi/v5"
+	"net/http"
 )
 
 type Handler struct {
-	pods   <-chan []domain.Pod
-	port   string
-	logger logger.Logger
+	deployer deployer
 }
 
-func NewHandler(pods <-chan []domain.Pod, port string, logger logger.Logger) *Handler {
-	return &Handler{
-		pods:   pods,
-		port:   port,
-		logger: logger,
-	}
+type deployer interface {
+	Deploy(domain.Deployment) error
+	Cancel(domain.Deployment) error
 }
 
-func (h Handler) Start(ctx context.Context) error {
-	server, err := tcp.NewServer[[]domain.Pod]("", h.port)
+func NewHandler(deployer deployer) *Handler {
+	return &Handler{deployer: deployer}
+}
+
+func (h Handler) Router() *chi.Mux {
+	router := chi.NewRouter()
+
+	router.Route("/api/v1/deploy", func(router chi.Router) {
+		router.Post("/", h.deploy)
+		router.Delete("/", h.cancel)
+	})
+
+	return router
+}
+
+func (h Handler) deploy(w http.ResponseWriter, r *http.Request) {
+	deployment, err := httputil.StructFromBodyYAML[domain.Deployment](r.Body)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
-	defer server.Close()
 
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case pods := <-h.pods:
-			server.Send(pods)
-		}
+	err = h.deployer.Deploy(deployment)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h Handler) cancel(w http.ResponseWriter, r *http.Request) {
+	deployment, err := httputil.StructFromBodyYAML[domain.Deployment](r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.deployer.Cancel(deployment)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
