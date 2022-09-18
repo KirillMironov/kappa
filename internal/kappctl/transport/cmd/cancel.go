@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func (a App) cancel() *cobra.Command {
+func (c Cmd) cancel() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cancel",
 		Short: "Cancel a kappa deployment",
@@ -20,7 +20,7 @@ func (a App) cancel() *cobra.Command {
 			}
 			defer manifest.Close()
 
-			resp, err := a.requester.Do(http.MethodDelete, "/api/v1/deploy", manifest)
+			resp, err := c.requester.Do(http.MethodDelete, "/api/v1/deploy", manifest)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				os.Exit(1)

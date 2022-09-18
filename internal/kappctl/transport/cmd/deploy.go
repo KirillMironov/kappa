@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func (a App) deploy() *cobra.Command {
+func (c Cmd) deploy() *cobra.Command {
 	return &cobra.Command{
 		Use:   "deploy",
 		Short: "Deploy a kappa manifest",
@@ -20,7 +20,7 @@ func (a App) deploy() *cobra.Command {
 			}
 			defer manifest.Close()
 
-			resp, err := a.requester.Do(http.MethodPost, "/api/v1/deploy", manifest)
+			resp, err := c.requester.Do(http.MethodPost, "/api/v1/deploy", manifest)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				os.Exit(1)

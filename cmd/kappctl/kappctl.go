@@ -18,9 +18,9 @@ func main() {
 	// DI
 	var (
 		requester = http.NewRequester(cfg.Host, cfg.Port, time.Second*3)
-		app       = cmd.NewApp(requester)
+		command   = cmd.NewCmd(requester)
 	)
 
 	// Cobra
-	app.Execute()
+	command.Execute()
 }

@@ -37,6 +37,7 @@ func (r Requester) Do(method string, path string, body io.Reader) (respBody stri
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
