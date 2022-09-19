@@ -2,10 +2,8 @@ package main
 
 import (
 	"github.com/KirillMironov/kappa/internal/kappctl/config"
-	"github.com/KirillMironov/kappa/internal/kappctl/transport/cmd"
-	"github.com/KirillMironov/kappa/internal/kappctl/transport/http"
+	"github.com/KirillMironov/kappa/internal/kappctl/transport"
 	"log"
-	"time"
 )
 
 func main() {
@@ -16,10 +14,7 @@ func main() {
 	}
 
 	// DI
-	var (
-		requester = http.NewRequester(cfg.Host, cfg.Port, time.Second*3)
-		command   = cmd.NewCmd(requester)
-	)
+	var command = transport.NewCmd(cfg.BaseApiURL)
 
 	// Cobra
 	command.Execute()
