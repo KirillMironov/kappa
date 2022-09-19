@@ -1,13 +1,16 @@
-package cmd
+package transport
 
 import (
 	"fmt"
+	"github.com/KirillMironov/kappa/pkg/cmdutil"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 )
 
-func (a App) cancel() *cobra.Command {
+func (c cmd) cancel() *cobra.Command {
+	var apiPath = "/api/v1/deploy"
+
 	return &cobra.Command{
 		Use:   "cancel",
 		Short: "Cancel a kappa deployment",
@@ -20,13 +23,10 @@ func (a App) cancel() *cobra.Command {
 			}
 			defer manifest.Close()
 
-			resp, err := a.requester.Do(http.MethodDelete, "/api/v1/deploy", manifest)
+			err = c.client.Do(http.MethodDelete, apiPath, manifest, http.StatusOK)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
+				cmdutil.Exit(err)
 			}
-
-			fmt.Println(resp)
 		},
 	}
 }

@@ -5,8 +5,7 @@ import (
 )
 
 type Config struct {
-	Host string `default:"localhost" envconfig:"HOST"`
-	Port string `default:"20501" envconfig:"PORT"`
+	BaseApiURL string `default:"http://localhost:20501" envconfig:"BASE_API_URL"`
 }
 
 func Load() (cfg Config, _ error) {
