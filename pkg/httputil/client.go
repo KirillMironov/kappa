@@ -25,26 +25,26 @@ func NewClient(baseURL string, timeout time.Duration) *Client {
 func (c *Client) Do(method string, path string, body io.Reader, expectedStatus int) error {
 	joinedURL, err := url.JoinPath(c.baseURL, path)
 	if err != nil {
-		return &Error{Internal: err}
+		return &httpError{Internal: err}
 	}
 
 	req, err := http.NewRequest(method, joinedURL, body)
 	if err != nil {
-		return &Error{Internal: err}
+		return &httpError{Internal: err}
 	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return &Error{Internal: err}
+		return &httpError{Internal: err}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != expectedStatus {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return &Error{Internal: err}
+			return &httpError{Internal: err}
 		}
-		return &Error{
+		return &httpError{
 			Code:    resp.StatusCode,
 			Message: string(bodyBytes),
 		}
@@ -53,19 +53,19 @@ func (c *Client) Do(method string, path string, body io.Reader, expectedStatus i
 	return nil
 }
 
-type Error struct {
+type httpError struct {
 	Code     int
 	Message  string
 	Internal error
 }
 
-func (e *Error) Error() string {
+func (he *httpError) Error() string {
 	switch {
-	case e.Internal != nil:
-		return e.Internal.Error()
-	case e.Message != "":
-		return fmt.Sprintf("status: %s (%d), message: %s", http.StatusText(e.Code), e.Code, e.Message)
+	case he.Internal != nil:
+		return he.Internal.Error()
+	case he.Message != "":
+		return fmt.Sprintf("status: %s (%d), message: %s", http.StatusText(he.Code), he.Code, he.Message)
 	default:
-		return fmt.Sprintf("status: %s (%d)", http.StatusText(e.Code), e.Code)
+		return fmt.Sprintf("status: %s (%d)", http.StatusText(he.Code), he.Code)
 	}
 }
