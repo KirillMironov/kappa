@@ -13,7 +13,7 @@ type Handler struct {
 
 type deployer interface {
 	Deploy(domain.Deployment) error
-	Cancel(domain.Deployment) error
+	Cancel(domain.Deployment)
 }
 
 func NewHandler(deployer deployer) *Handler {
@@ -51,8 +51,5 @@ func (h Handler) cancel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.deployer.Cancel(deployment)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	h.deployer.Cancel(deployment)
 }
