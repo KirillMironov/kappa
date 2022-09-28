@@ -26,7 +26,7 @@ func (d *Deployer) Deploy(deployment domain.Deployment) error {
 	for _, service := range deployment.Services {
 		command, args := d.splitCommand(&service)
 
-		proc := process.New(command, args)
+		proc := process.New(command, args...)
 
 		err := proc.Start()
 		if err != nil {

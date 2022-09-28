@@ -1,12 +1,14 @@
 package process
 
+import "os"
+
 type Process struct {
 	Command string
 	Args    []string
-	pid     int
+	process *os.Process
 }
 
-func New(command string, args []string) *Process {
+func New(command string, args ...string) *Process {
 	return &Process{
 		Command: command,
 		Args:    args,
@@ -14,5 +16,5 @@ func New(command string, args []string) *Process {
 }
 
 func (p *Process) Getpid() int {
-	return p.pid
+	return p.process.Pid
 }

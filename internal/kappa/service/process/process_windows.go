@@ -4,7 +4,6 @@ package process
 
 import (
 	"golang.org/x/sys/windows"
-	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
@@ -16,7 +15,6 @@ func (p *Process) Start() error {
 	if err != nil {
 		return err
 	}
-	defer windows.CloseHandle(job)
 
 	info := windows.JOBOBJECT_EXTENDED_LIMIT_INFORMATION{
 		BasicLimitInformation: windows.JOBOBJECT_BASIC_LIMIT_INFORMATION{
@@ -41,7 +39,7 @@ func (p *Process) Start() error {
 		return err
 	}
 
-	p.pid = cmd.Process.Pid
+	p.process = cmd.Process
 
 	type process struct {
 		pid    int
@@ -54,16 +52,11 @@ func (p *Process) Start() error {
 }
 
 func (p *Process) Terminate() error {
-	proc, err := os.FindProcess(p.pid)
-	if err != nil {
-		return err
-	}
+	taskkill := exec.Command("taskkill", "/T", "/F", "/PID", strconv.Itoa(p.process.Pid))
 
-	taskkill := exec.Command("taskkill", "/T", "/F", "/PID", strconv.Itoa(p.pid))
-
-	err = taskkill.Run()
+	err := taskkill.Run()
 	if err != nil {
-		return proc.Kill()
+		return p.process.Kill()
 	}
 
 	return nil
