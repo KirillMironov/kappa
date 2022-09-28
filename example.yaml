@@ -1,7 +1,7 @@
 services:
 
-  - name: echo
-    command: echo $FOO
+  - name: notepad
+    command: notepad.exe
     env:
       - name: FOO
         value: BAR

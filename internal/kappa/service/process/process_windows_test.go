@@ -11,8 +11,10 @@ import (
 func TestProcess(t *testing.T) {
 	process := New("notepad.exe")
 
-	require.NoError(t, process.Start())
-	require.NoError(t, process.Terminate())
+	err := process.Start()
+	require.NoError(t, err)
+
+	process.Terminate()
 
 	processState, _ := process.process.Wait()
 	assert.True(t, processState.Exited())

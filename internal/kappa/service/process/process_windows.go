@@ -51,13 +51,9 @@ func (p *Process) Start() error {
 	return windows.AssignProcessToJobObject(job, windows.Handle(handle))
 }
 
-func (p *Process) Terminate() error {
+func (p *Process) Terminate() {
 	taskkill := exec.Command("taskkill", "/T", "/F", "/PID", strconv.Itoa(p.process.Pid))
 
-	err := taskkill.Run()
-	if err != nil {
-		return p.process.Kill()
-	}
-
-	return nil
+	_ = taskkill.Run()
+	_ = p.process.Kill()
 }
