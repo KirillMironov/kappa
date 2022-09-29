@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-func (p *Process) Start() error {
+func (p *Process) start() error {
 	cmd := exec.Command(p.Command, p.Args...)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -25,7 +25,7 @@ func (p *Process) Start() error {
 	return nil
 }
 
-func (p *Process) Terminate() {
+func (p *Process) terminate() {
 	_ = p.process.Kill()
 	_, _ = p.process.Wait()
 }

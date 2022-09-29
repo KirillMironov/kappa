@@ -10,7 +10,7 @@ import (
 	"unsafe"
 )
 
-func (p *Process) Start() error {
+func (p *Process) start() error {
 	job, err := windows.CreateJobObject(nil, nil)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (p *Process) Start() error {
 	return windows.AssignProcessToJobObject(job, windows.Handle(handle))
 }
 
-func (p *Process) Terminate() {
+func (p *Process) terminate() {
 	taskkill := exec.Command("taskkill", "/T", "/F", "/PID", strconv.Itoa(p.process.Pid))
 
 	_ = taskkill.Run()
