@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 	"github.com/KirillMironov/kappa/internal/kappa/domain"
-	"github.com/KirillMironov/kappa/internal/kappa/service/process"
 	"github.com/KirillMironov/kappa/pkg/logger"
+	"github.com/KirillMironov/kappa/pkg/process"
 	"strings"
 	"sync"
 )
